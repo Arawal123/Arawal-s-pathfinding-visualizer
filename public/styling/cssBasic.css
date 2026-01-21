@@ -439,6 +439,7 @@
 #gridPanel {
   flex: 1 1 auto;
   overflow: auto;
+  position: relative;
 }
 
 #dashboard {
@@ -455,6 +456,96 @@
   margin-top: 18px;
   padding-top: 12px;
   border-top: 1px solid #e3e9f2;
+}
+
+.route-toggle {
+  margin-top: 6px;
+}
+
+.route-comparison-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.route-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1fr;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e1e8f1;
+  font-size: 12px;
+  color: #2c3e50;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.route-row.is-hidden {
+  display: none;
+}
+
+.route-row:hover {
+  box-shadow: 0 6px 12px rgba(30, 64, 122, 0.15);
+  transform: translateY(-1px);
+}
+
+.route-row .route-name {
+  font-weight: 600;
+}
+
+.route-row.route-recommended {
+  border-left: 4px solid #facc15;
+}
+
+.route-row.route-flood {
+  border-left: 4px solid #ef4444;
+}
+
+.route-row.route-delayed {
+  border-left: 4px solid #f97316;
+}
+
+.route-label-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.route-label {
+  position: absolute;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.route-label.route-recommended {
+  border-color: rgba(250, 204, 21, 0.8);
+}
+
+.route-label.route-flood {
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+.route-label.route-delayed {
+  border-color: rgba(249, 115, 22, 0.8);
+}
+
+td.route-cell {
+  transition: box-shadow 0.2s ease;
+}
+
+td.route-highlight {
+  outline: 2px solid rgba(15, 23, 42, 0.6);
+  outline-offset: -2px;
 }
 
 .dashboard-header h4 {
@@ -7216,4 +7307,42 @@ footer p {
 .show {display:block;}
 
 }
+
+.navbar {
+  background-color: #233447;
+  border-color: #2f435c;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-nav > li > a {
+  color: #e2e8f0;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-inverse .dropdown-menu > .is-active > a,
+.navbar-inverse .navbar-nav > .is-active > a {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #ffffff;
+}
+
+#actualStartButton {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+#actualStartButton:hover,
+#actualStartButton:focus {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
 /*# sourceMappingURL=flat-ui.css.map */
