@@ -475,6 +475,17 @@
   flex: 1 1 100%;
 }
 
+#gridLayout.is-collapsed #board {
+  width: 100%;
+  table-layout: fixed;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+#gridLayout.is-collapsed #board td {
+  width: auto;
+}
+
 .dashboard-section + .dashboard-section {
   margin-top: 18px;
   padding-top: 12px;
