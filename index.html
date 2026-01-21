@@ -1,11 +1,6 @@
 <html>
   <head>
-    <meta charset="utf-8">
     <title>Arawal's Pathfinding Visualizer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link id="cssTheme" rel="stylesheet" href="public/styling/cssBasic.css"/>
     <link rel="shortcut icon" type="image/png" href="public/styling/c_icon.png"/>
@@ -61,7 +56,7 @@
          </ul>
        </div>
      </nav>
-    </div>
+   </div>
     <div id="tutorial">
       <h3>Pathfinding Visualizer - web programming project!</h3>
       <h4>Name : Arawal shukla 24BCE5120</h4>
@@ -76,53 +71,7 @@
       <button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>
     </div>
     <div id='mainGrid'>
-      <section id="heroPanel">
-        <div class="hero-copy">
-          <span class="hero-eyebrow">Elite Route Intelligence</span>
-          <h1>Pathfinding Command Center</h1>
-          <p>Showcase premium algorithm insights with a cinematic visualizer, tactical metrics, and real-time routing intelligence.</p>
-          <div class="hero-actions">
-            <button id="heroStart" class="btn btn-primary" type="button">Run Quick Demo</button>
-            <button id="heroReset" class="btn btn-default" type="button">Reset Grid</button>
-          </div>
-          <div class="hero-meta">
-            <span class="meta-pill">Live Mode</span>
-            <span class="meta-pill">Interactive Grid</span>
-            <span class="meta-pill">Instant Metrics</span>
-          </div>
-        </div>
-        <div class="hero-cards">
-          <div class="hero-card">
-            <h5>Live Nodes</h5>
-            <div class="hero-value" id="heroNodes">--</div>
-            <div class="hero-caption">Active cells on grid</div>
-          </div>
-          <div class="hero-card">
-            <h5>Routing Confidence</h5>
-            <div class="hero-value" id="heroConfidence">98%</div>
-            <div class="hero-caption">AI-verified heuristics</div>
-          </div>
-          <div class="hero-card">
-            <h5>Performance</h5>
-            <div class="hero-value" id="heroPerf">0.0s</div>
-            <div class="hero-caption">Median solve time</div>
-          </div>
-        </div>
-      </section>
-      <div id="statusBar">
-        <div class="status-pill">System: <span id="systemStatus">Ready</span></div>
-        <div class="status-pill">Mode: <span id="currentMode">Interactive</span></div>
-        <div class="status-pill">Theme: <span id="themeStatus">Light</span></div>
-        <label class="toggle-row theme-toggle">
-          <input id="themeToggle" type="checkbox">
-          <span>Dark mode</span>
-        </label>
-      </div>
       <div id='mainText'>
-        <div class="legend-header">
-          <h4>Legend</h4>
-          <span class="legend-note">Node states &amp; markers</span>
-        </div>
         <ul>
           <li>
             <div class="start"></div>Start Node</li>
@@ -144,7 +93,6 @@
       </div>
       <div id="algorithmDescriptor">Pick an algorithm and visualize it!</div>
       <div id="gridLayout">
-        <button id="dashboardToggle" class="dashboard-toggle" type="button" aria-expanded="true" aria-controls="dashboard">Collapse Sidebar</button>
         <div id="gridPanel">
           <table id='board'></table>
         </div>
@@ -232,6 +180,5 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="public/browser/scenarioPresets.js"></script>
-  <script src="public/browser/uiEnhancements.js"></script>
   <script src='public/browser/bundle.js'></script>
 </html>
