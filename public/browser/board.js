@@ -45,6 +45,7 @@ function Board(height, width) {
 Board.prototype.initialise = function() {
   this.createGrid();
   this.addEventListeners();
+  this.initializeDashboardControls();
   this.toggleTutorialButtons();
 };
 
@@ -142,6 +143,50 @@ Board.prototype.addEventListeners = function() {
       }
     }
   }
+};
+
+Board.prototype.initializeDashboardControls = function() {
+  this.updateDashboardAlgorithm();
+  this.resetDashboardMetrics("Run a visualization to populate metrics.");
+  let toggle = document.getElementById("dataInputToggle");
+  let panel = document.getElementById("dataInputPanel");
+  let applyButton = document.getElementById("dataInputApply");
+  let fileInput = document.getElementById("dataInputFile");
+
+  if (toggle) {
+    toggle.onchange = () => {
+      panel.classList.toggle("is-hidden", !toggle.checked);
+      this.clearDataInputError();
+    };
+  }
+
+  if (applyButton) {
+    applyButton.onclick = () => {
+      let textArea = document.getElementById("dataInputTextarea");
+      this.applyDataInput(textArea.value);
+    };
+  }
+
+  if (fileInput) {
+    fileInput.onchange = (event) => {
+      let file = event.target.files[0];
+      if (!file) return;
+      let reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        let textArea = document.getElementById("dataInputTextarea");
+        textArea.value = loadEvent.target.result;
+        this.applyDataInput(loadEvent.target.result);
+      };
+      reader.readAsText(file);
+    };
+  }
+
+  let presetButtons = document.querySelectorAll("[data-preset-id]");
+  presetButtons.forEach(button => {
+    button.onclick = () => {
+      this.applyScenarioPreset(button.getAttribute("data-preset-id"));
+    };
+  });
 };
 
 Board.prototype.getNode = function(id) {
@@ -336,6 +381,7 @@ Board.prototype.drawShortestPathTimeout = function(targetNodeId, startNodeId, ty
 }
 
 
+  board.updateDashboardMetrics(currentNodesToAnimate, object);
   timeout(0);
 
   function timeout(index) {
@@ -439,6 +485,7 @@ Board.prototype.clearPath = function(clickedButton) {
       document.getElementById(object.id).className = "object";
     }
   }
+  this.resetDashboardMetrics("Run a visualization to populate metrics.");
 
   document.getElementById("startButtonStart").onclick = () => {
     if (!this.currentAlgorithm) {
@@ -556,6 +603,427 @@ Board.prototype.clearNodeStatuses = function() {
       currentNode.status = "unvisited";
     }
   })
+};
+
+Board.prototype.updateDashboardAlgorithm = function() {
+  let algorithmLabel = document.getElementById("dashboardAlgorithm");
+  if (!algorithmLabel) return;
+  if (!this.currentAlgorithm) {
+    algorithmLabel.textContent = "Not Selected";
+    return;
+  }
+  let name = "Custom Algorithm";
+  if (this.currentAlgorithm === "bfs") {
+    name = "Breadth-first Search";
+  } else if (this.currentAlgorithm === "dfs") {
+    name = "Depth-first Search";
+  } else if (this.currentAlgorithm === "dijkstra") {
+    name = "Dijkstra's Algorithm";
+  } else if (this.currentAlgorithm === "astar") {
+    name = "A* Search";
+  } else if (this.currentAlgorithm === "greedy") {
+    name = "Greedy Best-first Search";
+  } else if (this.currentAlgorithm === "CLA" && this.currentHeuristic !== "extraPoweredManhattanDistance") {
+    name = "Swarm Algorithm";
+  } else if (this.currentAlgorithm === "CLA" && this.currentHeuristic === "extraPoweredManhattanDistance") {
+    name = "Convergent Swarm Algorithm";
+  } else if (this.currentAlgorithm === "bidirectional") {
+    name = "Bidirectional Swarm Algorithm";
+  }
+  algorithmLabel.textContent = name;
+};
+
+Board.prototype.resetDashboardMetrics = function(message) {
+  let pathLength = document.getElementById("metricPathLength");
+  let estimatedTime = document.getElementById("metricEstimatedTime");
+  let riskScore = document.getElementById("metricRiskScore");
+  let comparison = document.getElementById("metricBaselineComparison");
+  if (pathLength) pathLength.textContent = "--";
+  if (estimatedTime) estimatedTime.textContent = "--";
+  if (riskScore) riskScore.textContent = "--";
+  if (comparison) comparison.textContent = "--";
+  let status = document.getElementById("metricStatus");
+  if (status) status.textContent = message || "";
+};
+
+Board.prototype.updateDashboardMetrics = function(pathNodes, includesObject) {
+  let nodeIds = this.buildPathNodeIds(pathNodes, includesObject);
+  if (!nodeIds.length) {
+    this.resetDashboardMetrics("No path available.");
+    return;
+  }
+  let metrics = this.calculateMetrics(nodeIds);
+  let pathLength = document.getElementById("metricPathLength");
+  let estimatedTime = document.getElementById("metricEstimatedTime");
+  let riskScore = document.getElementById("metricRiskScore");
+  let comparison = document.getElementById("metricBaselineComparison");
+  if (pathLength) pathLength.textContent = metrics.pathLength.toString();
+  if (estimatedTime) estimatedTime.textContent = metrics.estimatedTime.toFixed(1);
+  if (riskScore) riskScore.textContent = metrics.riskScore.toFixed(1);
+  if (comparison) {
+    if (metrics.baselineImprovement === null) {
+      comparison.textContent = "Baseline unavailable";
+    } else {
+      let direction = metrics.baselineImprovement >= 0 ? "shorter" : "longer";
+      comparison.textContent = `${Math.abs(metrics.baselineImprovement).toFixed(1)}% ${direction}`;
+    }
+  }
+  let status = document.getElementById("metricStatus");
+  if (status) status.textContent = "Metrics updated from latest path.";
+};
+
+Board.prototype.buildPathNodeIds = function(pathNodes, includesObject) {
+  let ids = [];
+  let nodes = Array.isArray(pathNodes) ? pathNodes : [];
+  if (this.start) ids.push(this.start);
+  nodes.forEach(node => {
+    if (node === "object") {
+      if (this.object) ids.push(this.object);
+    } else if (node && node.id) {
+      ids.push(node.id);
+    }
+  });
+  if (includesObject && this.object && !ids.includes(this.object)) {
+    ids.push(this.object);
+  }
+  if (this.target) ids.push(this.target);
+  return ids;
+};
+
+Board.prototype.calculateMetrics = function(pathNodeIds) {
+  let totalWeight = 0;
+  pathNodeIds.forEach(id => {
+    let node = this.nodes[id];
+    if (node && node.weight) {
+      totalWeight += node.weight;
+    }
+  });
+  let pathLength = pathNodeIds.length;
+  let weightFactor = pathLength ? 1 + totalWeight / pathLength : 0;
+  let estimatedTime = pathLength * weightFactor;
+  let riskScore = totalWeight;
+  let baselineLength = this.computeBaselinePathLength();
+  let baselineImprovement = null;
+  if (baselineLength && baselineLength > 0) {
+    baselineImprovement = ((baselineLength - pathLength) / baselineLength) * 100;
+  }
+  return {
+    pathLength,
+    estimatedTime,
+    riskScore,
+    baselineLength,
+    baselineImprovement
+  };
+};
+
+Board.prototype.computeBaselinePathLength = function() {
+  let useWeights = this.hasWeightedNodes();
+  let segments = [];
+  if (this.object) {
+    segments.push([this.start, this.object]);
+    segments.push([this.object, this.target]);
+  } else {
+    segments.push([this.start, this.target]);
+  }
+  let totalLength = 0;
+  for (let [start, target] of segments) {
+    if (!start || !target) return null;
+    let length = useWeights ?
+      this.dijkstraPathLength(start, target) :
+      this.bfsPathLength(start, target);
+    if (!length) return null;
+    totalLength += length;
+  }
+  return totalLength;
+};
+
+Board.prototype.hasWeightedNodes = function() {
+  return Object.keys(this.nodes).some(id => this.nodes[id].weight === 15);
+};
+
+Board.prototype.bfsPathLength = function(start, target) {
+  if (start === target) return 1;
+  let queue = [start];
+  let visited = new Set([start]);
+  let previous = {};
+  while (queue.length) {
+    let current = queue.shift();
+    if (current === target) break;
+    let neighbors = this.getNeighborIds(current);
+    neighbors.forEach(neighbor => {
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        previous[neighbor] = current;
+        queue.push(neighbor);
+      }
+    });
+  }
+  if (!visited.has(target)) return null;
+  let length = 1;
+  let step = target;
+  while (step !== start) {
+    step = previous[step];
+    if (!step) return null;
+    length += 1;
+  }
+  return length;
+};
+
+Board.prototype.dijkstraPathLength = function(start, target) {
+  if (start === target) return 1;
+  let distances = {};
+  let previous = {};
+  let unvisited = Object.keys(this.nodes);
+  unvisited.forEach(id => {
+    distances[id] = Infinity;
+  });
+  distances[start] = 0;
+  while (unvisited.length) {
+    let closestIndex = 0;
+    for (let i = 1; i < unvisited.length; i++) {
+      if (distances[unvisited[i]] < distances[unvisited[closestIndex]]) {
+        closestIndex = i;
+      }
+    }
+    let current = unvisited.splice(closestIndex, 1)[0];
+    if (distances[current] === Infinity) break;
+    if (current === target) break;
+    let neighbors = this.getNeighborIds(current);
+    neighbors.forEach(neighbor => {
+      if (!unvisited.includes(neighbor)) return;
+      let weight = this.nodes[neighbor].weight === 15 ? 15 : 0;
+      let tentative = distances[current] + 1 + weight;
+      if (tentative < distances[neighbor]) {
+        distances[neighbor] = tentative;
+        previous[neighbor] = current;
+      }
+    });
+  }
+  if (!previous[target] && start !== target) return null;
+  let length = 1;
+  let step = target;
+  while (step !== start) {
+    step = previous[step];
+    if (!step) return null;
+    length += 1;
+  }
+  return length;
+};
+
+Board.prototype.getNeighborIds = function(id) {
+  let coordinates = id.split("-");
+  let x = parseInt(coordinates[0]);
+  let y = parseInt(coordinates[1]);
+  let neighbors = [];
+  let potential;
+  if (this.boardArray[x - 1] && this.boardArray[x - 1][y]) {
+    potential = `${x - 1}-${y}`;
+    if (this.nodes[potential].status !== "wall") neighbors.push(potential);
+  }
+  if (this.boardArray[x + 1] && this.boardArray[x + 1][y]) {
+    potential = `${x + 1}-${y}`;
+    if (this.nodes[potential].status !== "wall") neighbors.push(potential);
+  }
+  if (this.boardArray[x] && this.boardArray[x][y - 1]) {
+    potential = `${x}-${y - 1}`;
+    if (this.nodes[potential].status !== "wall") neighbors.push(potential);
+  }
+  if (this.boardArray[x] && this.boardArray[x][y + 1]) {
+    potential = `${x}-${y + 1}`;
+    if (this.nodes[potential].status !== "wall") neighbors.push(potential);
+  }
+  return neighbors;
+};
+
+Board.prototype.getBoardDimensions = function() {
+  let navbarHeight = document.getElementById("navbarDiv").clientHeight;
+  let textHeight = document.getElementById("mainText").clientHeight + document.getElementById("algorithmDescriptor").clientHeight;
+  let height = Math.floor((document.documentElement.clientHeight - navbarHeight - textHeight) / 28);
+  let layout = document.getElementById("gridLayout");
+  let dashboard = document.getElementById("dashboard");
+  let widthSource = layout ? layout.clientWidth : document.documentElement.clientWidth;
+  let dashboardWidth = dashboard ? dashboard.clientWidth : 0;
+  let width = Math.floor((widthSource - dashboardWidth - 30) / 25);
+  return {
+    height: Math.max(5, height),
+    width: Math.max(5, width)
+  };
+};
+
+Board.prototype.applyScenarioPreset = function(presetId) {
+  let presets = window.scenarioPresets || [];
+  let preset = presets.find(item => item.id === presetId);
+  if (!preset) return;
+  let data = preset.build(this.height, this.width);
+  this.applyScenarioData(data);
+};
+
+Board.prototype.applyScenarioData = function(data) {
+  if (!data) return;
+  this.clearWalls();
+  let recommendation = document.getElementById("scenarioRecommendation");
+  if (recommendation) {
+    recommendation.textContent = data.recommendation || "Select a preset to view guidance.";
+  }
+  data.blockedNodes.forEach(id => {
+    if (id !== this.start && id !== this.target && id !== this.object) {
+      this.nodes[id].status = "wall";
+      this.nodes[id].weight = 0;
+      document.getElementById(id).className = "wall";
+    }
+  });
+  data.weightedNodes.forEach(entry => {
+    let id = entry.id || entry;
+    if (id !== this.start && id !== this.target && id !== this.object) {
+      this.nodes[id].status = "unvisited";
+      this.nodes[id].weight = entry.weight || 15;
+      document.getElementById(id).className = "unvisited weight";
+    }
+  });
+  if (this.algoDone) {
+    this.redoAlgorithm();
+  } else {
+    this.resetDashboardMetrics("Scenario applied. Visualize to compute metrics.");
+  }
+};
+
+Board.prototype.applyDataInput = function(rawText) {
+  this.clearDataInputError();
+  let parsed;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch (error) {
+    this.setDataInputError("Invalid JSON. Please check the format and try again.");
+    return;
+  }
+  let config = this.parseGridConfiguration(parsed);
+  if (!config) {
+    return;
+  }
+  this.applyGridConfiguration(config);
+};
+
+Board.prototype.parseGridConfiguration = function(config) {
+  if (!config || typeof config !== "object") {
+    this.setDataInputError("JSON must be an object with required fields.");
+    return null;
+  }
+  let blockedNodes = Array.isArray(config.blockedNodes) ? config.blockedNodes : null;
+  let weightedNodes = Array.isArray(config.weightedNodes) ? config.weightedNodes : null;
+  if (!blockedNodes || !weightedNodes) {
+    this.setDataInputError("JSON must include blockedNodes and weightedNodes arrays.");
+    return null;
+  }
+  let startNode = this.normalizeNodeId(config.startNode);
+  let endNode = this.normalizeNodeId(config.endNode);
+  if (!startNode || !endNode) {
+    this.setDataInputError("startNode and endNode must be valid grid coordinates.");
+    return null;
+  }
+  let normalizedBlocked = blockedNodes.map(node => this.normalizeNodeId(node)).filter(Boolean);
+  let normalizedWeights = weightedNodes.map(node => {
+    if (typeof node === "string" || Array.isArray(node)) {
+      let id = this.normalizeNodeId(node);
+      return id ? { id, weight: 15 } : null;
+    }
+    if (node && typeof node === "object") {
+      let id = this.normalizeNodeId(node.id || node);
+      let weight = parseInt(node.weight, 10);
+      if (!id) return null;
+      return { id, weight: Number.isNaN(weight) ? 15 : weight };
+    }
+    return null;
+  }).filter(Boolean);
+  return {
+    blockedNodes: normalizedBlocked,
+    weightedNodes: normalizedWeights,
+    startNode,
+    endNode
+  };
+};
+
+Board.prototype.normalizeNodeId = function(node) {
+  if (!node) return null;
+  if (typeof node === "string" && node.includes("-")) {
+    let [row, col] = node.split("-").map(Number);
+    if (Number.isInteger(row) && Number.isInteger(col)) {
+      if (this.boardArray[row] && this.boardArray[row][col]) {
+        return `${row}-${col}`;
+      }
+    }
+  }
+  if (Array.isArray(node) && node.length === 2) {
+    let row = parseInt(node[0], 10);
+    let col = parseInt(node[1], 10);
+    if (this.boardArray[row] && this.boardArray[row][col]) {
+      return `${row}-${col}`;
+    }
+  }
+  if (node && typeof node === "object" && node.row !== undefined && node.col !== undefined) {
+    let row = parseInt(node.row, 10);
+    let col = parseInt(node.col, 10);
+    if (this.boardArray[row] && this.boardArray[row][col]) {
+      return `${row}-${col}`;
+    }
+  }
+  return null;
+};
+
+Board.prototype.applyGridConfiguration = function(config) {
+  this.clearWalls();
+  if (this.object) {
+    document.getElementById(this.object).className = "unvisited";
+    this.nodes[this.object].status = "unvisited";
+    this.object = null;
+    this.numberOfObjects = 0;
+    this.isObject = false;
+  }
+  if (this.start) {
+    document.getElementById(this.start).className = "unvisited";
+    this.nodes[this.start].status = "unvisited";
+  }
+  if (this.target) {
+    document.getElementById(this.target).className = "unvisited";
+    this.nodes[this.target].status = "unvisited";
+  }
+  this.start = config.startNode;
+  this.target = config.endNode;
+  this.nodes[this.start].status = "start";
+  this.nodes[this.target].status = "target";
+  document.getElementById(this.start).className = "start";
+  document.getElementById(this.target).className = "target";
+
+  config.blockedNodes.forEach(id => {
+    if (id !== this.start && id !== this.target) {
+      this.nodes[id].status = "wall";
+      this.nodes[id].weight = 0;
+      document.getElementById(id).className = "wall";
+    }
+  });
+
+  config.weightedNodes.forEach(entry => {
+    if (entry.id !== this.start && entry.id !== this.target) {
+      this.nodes[entry.id].status = "unvisited";
+      this.nodes[entry.id].weight = entry.weight;
+      document.getElementById(entry.id).className = "unvisited weight";
+    }
+  });
+  this.algoDone = false;
+  this.resetDashboardMetrics("Configuration applied. Visualize to compute metrics.");
+};
+
+Board.prototype.setDataInputError = function(message) {
+  let errorNode = document.getElementById("dataInputError");
+  if (errorNode) {
+    errorNode.textContent = message;
+  }
+};
+
+Board.prototype.clearDataInputError = function() {
+  let errorNode = document.getElementById("dataInputError");
+  if (errorNode) {
+    errorNode.textContent = "";
+  }
 };
 
 Board.prototype.instantAlgorithm = function() {
@@ -687,6 +1155,8 @@ Board.prototype.changeStartNodeImages = function() {
   if (guaranteed.includes(this.currentAlgorithm)) {
     document.getElementById("algorithmDescriptor").innerHTML = `${name} is <i><b>weighted</b></i> and <i><b>guarantees</b></i> the shortest path!`;
   }
+  this.updateDashboardAlgorithm();
+  this.resetDashboardMetrics("Algorithm updated. Visualize to compute metrics.");
 };
 
 let counter = 1;
@@ -914,10 +1384,9 @@ Board.prototype.toggleButtons = function() {
 
 
 
-      let navbarHeight = document.getElementById("navbarDiv").clientHeight;
-      let textHeight = document.getElementById("mainText").clientHeight + document.getElementById("algorithmDescriptor").clientHeight;
-      let height = Math.floor((document.documentElement.clientHeight - navbarHeight - textHeight) / 28);
-      let width = Math.floor(document.documentElement.clientWidth / 25);
+      let dimensions = this.getBoardDimensions();
+      let height = dimensions.height;
+      let width = dimensions.width;
       let start = Math.floor(height / 2).toString() + "-" + Math.floor(width / 4).toString();
       let target = Math.floor(height / 2).toString() + "-" + Math.floor(3 * width / 4).toString();
 
@@ -963,6 +1432,7 @@ Board.prototype.toggleButtons = function() {
       this.algoDone = false;
       this.numberOfObjects = 0;
       this.isObject = false;
+      this.resetDashboardMetrics("Board cleared. Visualize to compute metrics.");
     }
 
     document.getElementById("startButtonClearWalls").onclick = () => {
@@ -1098,11 +1568,23 @@ Board.prototype.toggleButtons = function() {
 
 }
 
-let navbarHeight = $("#navbarDiv").height();
-let textHeight = $("#mainText").height() + $("#algorithmDescriptor").height();
-let height = Math.floor(($(document).height() - navbarHeight - textHeight) / 28);
-let width = Math.floor($(document).width() / 25);
-let newBoard = new Board(height, width)
+function getInitialBoardDimensions() {
+  let navbarHeight = document.getElementById("navbarDiv").clientHeight;
+  let textHeight = document.getElementById("mainText").clientHeight + document.getElementById("algorithmDescriptor").clientHeight;
+  let height = Math.floor((document.documentElement.clientHeight - navbarHeight - textHeight) / 28);
+  let layout = document.getElementById("gridLayout");
+  let dashboard = document.getElementById("dashboard");
+  let widthSource = layout ? layout.clientWidth : document.documentElement.clientWidth;
+  let dashboardWidth = dashboard ? dashboard.clientWidth : 0;
+  let width = Math.floor((widthSource - dashboardWidth - 30) / 25);
+  return {
+    height: Math.max(5, height),
+    width: Math.max(5, width)
+  };
+}
+
+let dimensions = getInitialBoardDimensions();
+let newBoard = new Board(dimensions.height, dimensions.width)
 newBoard.initialise();
 
 window.onkeydown = (e) => {

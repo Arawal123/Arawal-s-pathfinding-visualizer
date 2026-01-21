@@ -307,6 +307,8 @@
 #mainGrid{
   position: absolute;
   z-index: 1;
+  width: 100%;
+  padding: 10px 16px 20px 16px;
 }
 
 #tutorial {
@@ -426,6 +428,115 @@
 #board {
   margin-left: 5px;
   margin-right: 5px;
+}
+
+#gridLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+#gridPanel {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+#dashboard {
+  width: 320px;
+  background: #f7f9fb;
+  border: 1px solid #dbe4ee;
+  border-radius: 8px;
+  padding: 16px;
+  color: #2c3e50;
+  box-shadow: 0 8px 20px rgba(15, 36, 56, 0.08);
+}
+
+.dashboard-section + .dashboard-section {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e3e9f2;
+}
+
+.dashboard-header h4 {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.dashboard-subtitle {
+  font-size: 12px;
+  color: #607089;
+  margin-bottom: 10px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e1e7f0;
+}
+
+.metric-row span:last-child {
+  font-weight: 600;
+}
+
+.metric-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6c7a89;
+}
+
+.preset-buttons {
+  display: grid;
+  gap: 8px;
+}
+
+.preset-buttons .btn {
+  width: 100%;
+  text-align: left;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.data-input-panel {
+  margin-top: 10px;
+}
+
+.data-input-panel textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid #c9d4e3;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.data-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.data-input-actions input[type="file"] {
+  flex: 1;
+  font-size: 12px;
+}
+
+.data-input-error {
+  margin-top: 8px;
+  color: #b30000;
+  font-size: 12px;
+}
+
+.is-hidden {
+  display: none;
 }
 
 /*#tutorial {
