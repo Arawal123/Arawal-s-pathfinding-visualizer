@@ -473,6 +473,7 @@
 
 #gridLayout.is-collapsed #gridPanel {
   flex: 1 1 100%;
+  width: 100%;
 }
 
 #gridLayout.is-collapsed #board {
@@ -483,7 +484,7 @@
 }
 
 #gridLayout.is-collapsed #board td {
-  width: auto;
+  width: 1%;
 }
 
 .dashboard-section + .dashboard-section {
