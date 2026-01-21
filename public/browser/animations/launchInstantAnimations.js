@@ -45,6 +45,10 @@ function launchInstantAnimations(board, success, type, object, algorithm, heuris
     }
   }
 
+  if (!object) {
+    board.updateDashboardMetrics(shortestNodes, board.isObject);
+  }
+
   let j;
   for (j = 0; j < shortestNodes.length; j++) {
     if (j === 0) {

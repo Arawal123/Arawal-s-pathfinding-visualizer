@@ -92,10 +92,64 @@
         </ul>
       </div>
       <div id="algorithmDescriptor">Pick an algorithm and visualize it!</div>
-      <table id='board'/>
+      <div id="gridLayout">
+        <div id="gridPanel">
+          <table id='board'></table>
+        </div>
+        <aside id="dashboard">
+          <div class="dashboard-section">
+            <div class="dashboard-header">
+              <h4>Impact &amp; Metrics</h4>
+              <div class="dashboard-subtitle">Active Algorithm: <span id="dashboardAlgorithm">Not Selected</span></div>
+            </div>
+            <div class="metric-row">
+              <span>Total path length</span>
+              <span id="metricPathLength">--</span>
+            </div>
+            <div class="metric-row">
+              <span>Estimated time</span>
+              <span id="metricEstimatedTime">--</span>
+            </div>
+            <div class="metric-row">
+              <span>Risk score</span>
+              <span id="metricRiskScore">--</span>
+            </div>
+            <div class="metric-row">
+              <span>Vs baseline</span>
+              <span id="metricBaselineComparison">--</span>
+            </div>
+            <div id="metricStatus" class="metric-status">Run a visualization to populate metrics.</div>
+          </div>
+          <div class="dashboard-section">
+            <h4>Scenario Presets</h4>
+            <div id="presetButtons" class="preset-buttons">
+              <button class="btn btn-default" data-preset-id="flood-evacuation" type="button">Flood Evacuation</button>
+              <button class="btn btn-default" data-preset-id="emergency-response" type="button">Emergency Response</button>
+              <button class="btn btn-default" data-preset-id="accessibility-routing" type="button">Accessibility Routing</button>
+            </div>
+            <div class="dashboard-subtitle">Recommendation: <span id="scenarioRecommendation">Select a preset to view guidance.</span></div>
+          </div>
+          <div class="dashboard-section">
+            <h4>Data Input Mode</h4>
+            <label class="toggle-row">
+              <input id="dataInputToggle" type="checkbox">
+              <span>Enable data input mode</span>
+            </label>
+            <div id="dataInputPanel" class="data-input-panel is-hidden">
+              <textarea id="dataInputTextarea" placeholder="Paste JSON configuration here..."></textarea>
+              <div class="data-input-actions">
+                <input id="dataInputFile" type="file" accept=".json,application/json">
+                <button id="dataInputApply" class="btn btn-primary" type="button">Apply JSON</button>
+              </div>
+              <div id="dataInputError" class="data-input-error" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   </body>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="public/browser/scenarioPresets.js"></script>
   <script src='public/browser/bundle.js'></script>
 </html>
