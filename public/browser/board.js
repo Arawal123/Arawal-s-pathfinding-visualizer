@@ -13,6 +13,29 @@ const weightsDemonstration = require("./mazeAlgorithms/weightsDemonstration");
 const simpleDemonstration = require("./mazeAlgorithms/simpleDemonstration");
 const bidirectional = require("./pathfindingAlgorithms/bidirectional");
 const getDistance = require("./getDistance");
+const {
+  initializeRouteOverlay,
+  updateRouteOverlays,
+  clearRouteOverlays,
+  deriveAlternativeRoutes,
+  highlightRoute
+} = require("./routeOverlay");
+const {
+  initializeRouteComparison,
+  updateRouteComparison,
+  resetRouteComparison
+} = require("./routeComparison");
+
+const algorithmButtonIds = [
+  "startButtonDijkstra",
+  "startButtonAStar2",
+  "startButtonGreedy",
+  "startButtonAStar",
+  "startButtonAStar3",
+  "startButtonBidirectional",
+  "startButtonBFS",
+  "startButtonDFS"
+];
 
 function Board(height, width) {
   this.height = height;
@@ -34,19 +57,107 @@ function Board(height, width) {
   this.previouslySwitchedNodeWeight = 0;
   this.keyDown = false;
   this.algoDone = false;
-  this.currentAlgorithm = null;
+  this.currentAlgorithm = "dijkstra";
   this.currentHeuristic = null;
   this.numberOfObjects = 0;
   this.isObject = false;
   this.buttonsOn = false;
   this.speed = "fast";
+  this.pendingRouteUpdate = null;
 }
+
+Board.prototype.setActiveAlgorithmMenuItem = function(activeButtonId) {
+  algorithmButtonIds.forEach(buttonId => {
+    let element = document.getElementById(buttonId);
+    if (!element) return;
+    element.classList.toggle("is-active", buttonId === activeButtonId);
+  });
+};
+
+Board.prototype.setNavbarMenuItemState = function(buttonId, isDisabled) {
+  let element = document.getElementById(buttonId);
+  if (!element) return;
+  let activeClass = element.classList.contains("is-active") ? " is-active" : "";
+  element.className = `navbar-inverse navbar-nav${isDisabled ? " disabledA" : ""}${activeClass}`;
+};
 
 Board.prototype.initialise = function() {
   this.createGrid();
   this.addEventListeners();
   this.initializeDashboardControls();
+  this.initializeRouteVisuals();
+  this.setActiveAlgorithmMenuItem("startButtonDijkstra");
+  document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Dijkstra\'s!</button>';
+  this.changeStartNodeImages();
   this.toggleTutorialButtons();
+};
+
+Board.prototype.initializeRouteVisuals = function() {
+  initializeRouteOverlay(this);
+  initializeRouteComparison(this, (routeKey, isActive) => {
+    highlightRoute(this, routeKey, isActive);
+  });
+  this.onAlternativeRoutesToggle = () => {
+    if (this.routeOverlayState?.routeSummaries) {
+      updateRouteComparison(this.routeOverlayState.routeSummaries, this.routeOverlayState.showAlternatives);
+    }
+  };
+};
+
+Board.prototype.scheduleRouteVisuals = function(pathNodes, includesObject) {
+  this.pendingRouteUpdate = { pathNodes, includesObject };
+};
+
+Board.prototype.applyRouteVisuals = function() {
+  if (!this.pendingRouteUpdate) return;
+  let { pathNodes, includesObject } = this.pendingRouteUpdate;
+  this.pendingRouteUpdate = null;
+  this.updateRouteVisuals(pathNodes, includesObject);
+};
+
+Board.prototype.updateRouteVisuals = function(pathNodes, includesObject) {
+  let baseIds = this.buildPathNodeIds(pathNodes, includesObject);
+  if (!baseIds.length) {
+    clearRouteOverlays(this);
+    resetRouteComparison();
+    return;
+  }
+  let routes = deriveAlternativeRoutes(baseIds, this);
+  updateRouteOverlays(this, routes);
+  let summaries = this.buildRouteSummaries(routes);
+  if (this.routeOverlayState) {
+    this.routeOverlayState.routeSummaries = summaries;
+  }
+  updateRouteComparison(summaries, this.routeOverlayState?.showAlternatives);
+};
+
+Board.prototype.buildRouteSummaries = function(routes) {
+  let summaries = [];
+  let baseMetrics = this.calculateMetrics(routes.recommended.ids);
+  let buildSummary = (key, label) => {
+    let metrics = this.calculateMetrics(routes[key].ids);
+    let delay = Math.max(0, metrics.estimatedTime - baseMetrics.estimatedTime);
+    let delayText = delay.toFixed(1).replace(/\.0$/, "");
+    let weightedNodes = routes[key].ids.filter(id => this.nodes[id] && this.nodes[id].weight === 15).length;
+    let riskLabel = "Low Risk";
+    if (weightedNodes > 0 && weightedNodes <= 2) {
+      riskLabel = "Medium Risk";
+    } else if (weightedNodes > 2) {
+      riskLabel = "High Risk ⚠";
+    }
+    let accessibility = weightedNodes === 0 ? "Accessible ✔" : "Limited Access";
+    summaries.push({
+      key,
+      label,
+      delayText: `+${delayText} min`,
+      riskLabel,
+      accessibility
+    });
+  };
+  buildSummary("recommended", "Recommended");
+  buildSummary("flood", "Flood Route");
+  buildSummary("delayed", "Delayed");
+  return summaries;
 };
 
 Board.prototype.createGrid = function() {
@@ -395,6 +506,7 @@ Board.prototype.drawShortestPathTimeout = function(targetNodeId, startNodeId, ty
         shortestPathChange(board.nodes[board.target], currentNodesToAnimate[index - 1], "isActualTarget");
       }
       if (index > currentNodesToAnimate.length) {
+        board.applyRouteVisuals();
         board.toggleButtons();
         return;
       }
@@ -486,6 +598,9 @@ Board.prototype.clearPath = function(clickedButton) {
     }
   }
   this.resetDashboardMetrics("Run a visualization to populate metrics.");
+  clearRouteOverlays(this);
+  resetRouteComparison();
+  this.pendingRouteUpdate = null;
 
   document.getElementById("startButtonStart").onclick = () => {
     if (!this.currentAlgorithm) {
@@ -670,6 +785,7 @@ Board.prototype.updateDashboardMetrics = function(pathNodes, includesObject) {
   }
   let status = document.getElementById("metricStatus");
   if (status) status.textContent = "Metrics updated from latest path.";
+  this.scheduleRouteVisuals(pathNodes, includesObject);
 };
 
 Board.prototype.buildPathNodeIds = function(pathNodes, includesObject) {
@@ -1299,6 +1415,7 @@ Board.prototype.toggleButtons = function() {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Bidirectional Swarm!</button>'
       this.currentAlgorithm = "bidirectional";
       this.currentHeuristic = "manhattanDistance";
+      this.setActiveAlgorithmMenuItem("startButtonBidirectional");
       if (this.numberOfObjects) {
         let objectNodeId = this.object;
         document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Bomb</a></li>';
@@ -1315,6 +1432,7 @@ Board.prototype.toggleButtons = function() {
     document.getElementById("startButtonDijkstra").onclick = () => {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Dijkstra\'s!</button>'
       this.currentAlgorithm = "dijkstra";
+      this.setActiveAlgorithmMenuItem("startButtonDijkstra");
       this.changeStartNodeImages();
     }
 
@@ -1322,6 +1440,7 @@ Board.prototype.toggleButtons = function() {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Swarm!</button>'
       this.currentAlgorithm = "CLA";
       this.currentHeuristic = "manhattanDistance"
+      this.setActiveAlgorithmMenuItem("startButtonAStar");
       this.changeStartNodeImages();
     }
 
@@ -1329,6 +1448,7 @@ Board.prototype.toggleButtons = function() {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize A*!</button>'
       this.currentAlgorithm = "astar";
       this.currentHeuristic = "poweredManhattanDistance"
+      this.setActiveAlgorithmMenuItem("startButtonAStar2");
       this.changeStartNodeImages();
     }
 
@@ -1336,18 +1456,21 @@ Board.prototype.toggleButtons = function() {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Convergent Swarm!</button>'
       this.currentAlgorithm = "CLA";
       this.currentHeuristic = "extraPoweredManhattanDistance"
+      this.setActiveAlgorithmMenuItem("startButtonAStar3");
       this.changeStartNodeImages();
     }
 
     document.getElementById("startButtonGreedy").onclick = () => {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize Greedy!</button>'
       this.currentAlgorithm = "greedy";
+      this.setActiveAlgorithmMenuItem("startButtonGreedy");
       this.changeStartNodeImages();
     }
 
     document.getElementById("startButtonBFS").onclick = () => {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize BFS!</button>'
       this.currentAlgorithm = "bfs";
+      this.setActiveAlgorithmMenuItem("startButtonBFS");
       this.clearWeights();
       this.changeStartNodeImages();
     }
@@ -1355,6 +1478,7 @@ Board.prototype.toggleButtons = function() {
     document.getElementById("startButtonDFS").onclick = () => {
       document.getElementById("startButtonStart").innerHTML = '<button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize DFS!</button>'
       this.currentAlgorithm = "dfs";
+      this.setActiveAlgorithmMenuItem("startButtonDFS");
       this.clearWeights();
       this.changeStartNodeImages();
     }
@@ -1502,17 +1626,17 @@ Board.prototype.toggleButtons = function() {
     document.getElementById("startButtonCreateMazeFour").className = "navbar-inverse navbar-nav";
     document.getElementById("startButtonCreateMazeWeights").className = "navbar-inverse navbar-nav";
     document.getElementById("startStairDemonstration").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonDFS").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonBFS").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonDijkstra").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonAStar").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonAStar2").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonAStar3").className = "navbar-inverse navbar-nav";
+    this.setNavbarMenuItemState("startButtonDFS", false);
+    this.setNavbarMenuItemState("startButtonBFS", false);
+    this.setNavbarMenuItemState("startButtonDijkstra", false);
+    this.setNavbarMenuItemState("startButtonAStar", false);
+    this.setNavbarMenuItemState("startButtonAStar2", false);
+    this.setNavbarMenuItemState("startButtonAStar3", false);
     document.getElementById("adjustFast").className = "navbar-inverse navbar-nav";
     document.getElementById("adjustAverage").className = "navbar-inverse navbar-nav";
     document.getElementById("adjustSlow").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonBidirectional").className = "navbar-inverse navbar-nav";
-    document.getElementById("startButtonGreedy").className = "navbar-inverse navbar-nav";
+    this.setNavbarMenuItemState("startButtonBidirectional", false);
+    this.setNavbarMenuItemState("startButtonGreedy", false);
     document.getElementById("actualStartButton").style.backgroundColor = "";
 
   } else {
@@ -1553,14 +1677,14 @@ Board.prototype.toggleButtons = function() {
     document.getElementById("startButtonCreateMazeFour").className = "navbar-inverse navbar-nav disabledA";
     document.getElementById("startButtonCreateMazeWeights").className = "navbar-inverse navbar-nav disabledA";
     document.getElementById("startStairDemonstration").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonDFS").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonBFS").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonDijkstra").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonAStar").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonGreedy").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonAStar2").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonAStar3").className = "navbar-inverse navbar-nav disabledA";
-    document.getElementById("startButtonBidirectional").className = "navbar-inverse navbar-nav disabledA";
+    this.setNavbarMenuItemState("startButtonDFS", true);
+    this.setNavbarMenuItemState("startButtonBFS", true);
+    this.setNavbarMenuItemState("startButtonDijkstra", true);
+    this.setNavbarMenuItemState("startButtonAStar", true);
+    this.setNavbarMenuItemState("startButtonGreedy", true);
+    this.setNavbarMenuItemState("startButtonAStar2", true);
+    this.setNavbarMenuItemState("startButtonAStar3", true);
+    this.setNavbarMenuItemState("startButtonBidirectional", true);
 
     document.getElementById("actualStartButton").style.backgroundColor = "rgb(185, 15, 15)";
   }
