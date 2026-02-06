@@ -1516,7 +1516,7 @@ Board.prototype.toggleTutorialButtons = function() {
     } else if (counter === 5) {
       document.getElementById("tutorial").innerHTML = `<h3>Adding walls and weights</h3><h6>Click on the grid to add a wall. Click on the grid while pressing W to add a weight. Generate mazes and patterns from the "Mazes & Patterns" drop-down menu.</h6><p>Walls are impenetrable, meaning that a path cannot cross through them. Weights, however, are not impassable. They are simply more "costly" to move through. In this application, moving through a weight node has a "cost" of 15.</p><img id="secondTutorialImage" src="public/styling/walls.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 6) {
-      document.getElementById("tutorial").innerHTML = `<h3>Adding a stop</h3><h6>Click the "Add Stop" button.</h6><p>Adding a stop will change the course of the chosen algorithm. In other words, the algorithm will first look for the stop and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a stop.</p><img id="secondTutorialImage" src="public/styling/bomb.png"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
+      document.getElementById("tutorial").innerHTML = `<h3>Adding a bomb</h3><h6>Click the "Add Bomb" button.</h6><p>Adding a bomb will change the course of the chosen algorithm. In other words, the algorithm will first look for the bomb (in an effort to diffuse it) and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a bomb.</p><img id="secondTutorialImage" src="public/styling/bomb.png"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 7) {
       document.getElementById("tutorial").innerHTML = `<h3>Dragging nodes</h3><h6>Click and drag the start, bomb, and target nodes to move them.</h6><p>Note that you can drag nodes even after an algorithm has finished running. This will allow you to instantly see different paths.</p><img src="public/styling/dragging.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 8) {
@@ -1623,7 +1623,7 @@ Board.prototype.toggleButtons = function() {
       this.currentHeuristic = "manhattanDistance";
       if (this.numberOfObjects) {
         let objectNodeId = this.object;
-        document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Stop</a></li>';
+        document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Bomb</a></li>';
         document.getElementById(objectNodeId).className = "unvisited";
         this.object = null;
         this.numberOfObjects = 0;
@@ -1702,7 +1702,7 @@ Board.prototype.toggleButtons = function() {
     }
 
     document.getElementById("startButtonClearBoard").onclick = () => {
-      document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
+      document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Bomb</a></li>';
 
 
 
@@ -1791,7 +1791,7 @@ Board.prototype.toggleButtons = function() {
           if (this.target === objectNodeId || this.start === objectNodeId || this.numberOfObjects === 1) {
             console.log("Failure to place object.");
           } else {
-            document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Remove Stop</a></li>';
+            document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Remove Bomb</a></li>';
             this.clearPath("clickedButton");
             this.object = objectNodeId;
             this.numberOfObjects = 1;
@@ -1800,7 +1800,7 @@ Board.prototype.toggleButtons = function() {
           }
         } else {
           let objectNodeId = this.object;
-          document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
+          document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Bomb</a></li>';
           document.getElementById(objectNodeId).className = "unvisited";
           this.object = null;
           this.numberOfObjects = 0;
