@@ -434,6 +434,7 @@
   display: flex;
   align-items: flex-start;
   gap: 18px;
+  position: relative;
 }
 
 #gridPanel {
@@ -450,6 +451,40 @@
   padding: 16px;
   color: #2c3e50;
   box-shadow: 0 8px 20px rgba(15, 36, 56, 0.08);
+}
+
+.dashboard-toggle {
+  position: absolute;
+  top: -42px;
+  right: 0;
+  border-radius: 16px;
+  border: 1px solid #dbe4ee;
+  background: #ffffff;
+  color: #2c3e50;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(15, 36, 56, 0.12);
+}
+
+#gridLayout.is-collapsed #dashboard {
+  display: none;
+}
+
+#gridLayout.is-collapsed #gridPanel {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+#gridLayout.is-collapsed #board {
+  width: 100%;
+  table-layout: fixed;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+#gridLayout.is-collapsed #board td {
+  width: 1%;
 }
 
 .dashboard-section + .dashboard-section {
