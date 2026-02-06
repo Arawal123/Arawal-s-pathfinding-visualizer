@@ -130,50 +130,6 @@
             </div>
             <div class="dashboard-subtitle">Recommendation: <span id="scenarioRecommendation">Select a preset to view guidance.</span></div>
           </div>
-          <div class="dashboard-section">
-            <h4>Data Input Mode</h4>
-            <label class="toggle-row">
-              <input id="dataInputToggle" type="checkbox">
-              <span>Enable data input mode</span>
-            </label>
-            <div id="dataInputPanel" class="data-input-panel is-hidden">
-              <textarea id="dataInputTextarea" placeholder="Paste JSON configuration here..."></textarea>
-              <div class="data-input-actions">
-                <input id="dataInputFile" type="file" accept=".json,application/json">
-                <button id="dataInputApply" class="btn btn-primary" type="button">Apply JSON</button>
-              </div>
-              <div id="dataInputError" class="data-input-error" role="status" aria-live="polite"></div>
-            </div>
-          </div>
-          <div class="dashboard-section" id="routeComparisonSection">
-            <div class="dashboard-header">
-              <h4>Route Comparison</h4>
-              <label class="toggle-row route-toggle">
-                <input id="showAlternativeRoutes" type="checkbox" checked>
-                <span>Show Alternative Routes</span>
-              </label>
-            </div>
-            <div class="route-comparison-rows">
-              <div class="route-row route-recommended" data-route="recommended">
-                <span class="route-name">Recommended</span>
-                <span class="route-delay">+0 min</span>
-                <span class="route-risk">Low Risk</span>
-                <span class="route-access">Accessible ✔</span>
-              </div>
-              <div class="route-row route-flood" data-route="flood">
-                <span class="route-name">Flood Route</span>
-                <span class="route-delay">+0 min</span>
-                <span class="route-risk">High Risk ⚠</span>
-                <span class="route-access">Limited Access</span>
-              </div>
-              <div class="route-row route-delayed" data-route="delayed">
-                <span class="route-name">Delayed</span>
-                <span class="route-delay">+0 min</span>
-                <span class="route-risk">Medium Risk</span>
-                <span class="route-access">Limited Access</span>
-              </div>
-            </div>
-          </div>
         </aside>
       </div>
     </div>
