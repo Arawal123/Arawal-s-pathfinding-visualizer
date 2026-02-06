@@ -194,7 +194,7 @@
 }
 
 .visitedObjectNode {
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -669,7 +669,7 @@ td.route-highlight {
   border: 1px solid rgb(175, 216, 248);
   background-color: rgba(0, 190, 218, 0.75);
   /*background-color: rgba(178, 67, 255, 0.75);*/
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -689,7 +689,7 @@ td.route-highlight {
 
 .visited.weight{
   border: 1px solid rgb(175, 216, 248);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -763,7 +763,7 @@ td.route-highlight {
   border: 1px solid rgb(175, 216, 248);
   background-color: rgba(178, 67, 255, 0.75);
   /*background-color: rgba(0, 190, 218, 0.75);*/
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -785,7 +785,7 @@ td.route-highlight {
 .visitedobject.weight{
   /*background:red*/
   border: 1px solid rgb(175, 216, 248);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -827,7 +827,7 @@ td.route-highlight {
 }
 
 .borderlessWeight {
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -843,7 +843,7 @@ td.route-highlight {
 
 .unvisited.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -885,7 +885,7 @@ td.route-highlight {
 
 .object{
   /*border: 1px solid rgb(175, 216, 248);*/
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   /*background-color: rgb(255, 254, 106);*/
   background-position: center;
   background-repeat: no-repeat;
@@ -903,7 +903,7 @@ td.route-highlight {
 .instantobjectTransparent{
   /*border: 1px solid rgb(175, 216, 248);*/
   opacity: 0.5;
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   background-color: rgb(255, 254, 106);
   background-position: center;
   background-repeat: no-repeat;
@@ -913,7 +913,7 @@ td.route-highlight {
 .objectTransparent{
   /*border: 1px solid rgb(175, 216, 248);*/
   opacity: 0.5;
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   background-color: rgb(255, 254, 106);
   background-position: center;
   background-repeat: no-repeat;
@@ -971,7 +971,7 @@ td.route-highlight {
 .instantshortest-path.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
   background-color: rgb(255, 254, 106);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -996,7 +996,7 @@ td.route-highlight {
 .shortest-path.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
   background-color: rgb(255, 254, 106);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
