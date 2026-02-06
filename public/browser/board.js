@@ -64,6 +64,8 @@ function Board(height, width) {
   this.buttonsOn = false;
   this.speed = "fast";
   this.pendingRouteUpdate = null;
+  this.layoutMode = "standard";
+  this.layoutSnapshot = null;
 }
 
 Board.prototype.setActiveAlgorithmMenuItem = function(activeButtonId) {
@@ -259,10 +261,17 @@ Board.prototype.addEventListeners = function() {
 Board.prototype.initializeDashboardControls = function() {
   this.updateDashboardAlgorithm();
   this.resetDashboardMetrics("Run a visualization to populate metrics.");
+  let layoutSelect = document.getElementById("layoutModeSelect");
   let toggle = document.getElementById("dataInputToggle");
   let panel = document.getElementById("dataInputPanel");
   let applyButton = document.getElementById("dataInputApply");
   let fileInput = document.getElementById("dataInputFile");
+
+  if (layoutSelect) {
+    layoutSelect.onchange = () => {
+      this.applyLayoutMode(layoutSelect.value);
+    };
+  }
 
   if (toggle) {
     toggle.onchange = () => {
@@ -718,6 +727,157 @@ Board.prototype.clearNodeStatuses = function() {
       currentNode.status = "unvisited";
     }
   })
+};
+
+Board.prototype.captureLayoutSnapshot = function() {
+  let snapshot = {
+    start: this.start,
+    target: this.target,
+    object: this.object,
+    numberOfObjects: this.numberOfObjects,
+    isObject: this.isObject,
+    nodes: {}
+  };
+  Object.keys(this.nodes).forEach(id => {
+    let node = this.nodes[id];
+    let element = document.getElementById(id);
+    snapshot.nodes[id] = {
+      status: node.status,
+      weight: node.weight,
+      className: element ? element.className : node.status
+    };
+  });
+  return snapshot;
+};
+
+Board.prototype.restoreLayoutSnapshot = function(snapshot) {
+  if (!snapshot) return;
+  this.start = snapshot.start;
+  this.target = snapshot.target;
+  this.object = snapshot.object;
+  this.numberOfObjects = snapshot.numberOfObjects;
+  this.isObject = snapshot.isObject;
+  Object.keys(snapshot.nodes).forEach(id => {
+    let nodeState = snapshot.nodes[id];
+    let node = this.nodes[id];
+    if (!node) return;
+    node.status = nodeState.status;
+    node.weight = nodeState.weight;
+    let element = document.getElementById(id);
+    if (element) {
+      element.className = nodeState.className;
+    }
+  });
+};
+
+Board.prototype.applyLayoutMode = function(mode) {
+  if (mode === this.layoutMode) {
+    return;
+  }
+  if (mode === "city-blocks") {
+    if (!this.layoutSnapshot) {
+      this.layoutSnapshot = this.captureLayoutSnapshot();
+    }
+    this.applyCityBlocksLayout();
+    this.layoutMode = mode;
+    return;
+  }
+  if (this.layoutSnapshot) {
+    this.restoreLayoutSnapshot(this.layoutSnapshot);
+    this.layoutSnapshot = null;
+  }
+  this.layoutMode = "standard";
+};
+
+Board.prototype.applyCityBlocksLayout = function() {
+  this.clearPath("clickedButton");
+  clearRouteOverlays(this);
+  let blockSize = 5;
+  let streetWidth = 1;
+  let blockSpan = blockSize + streetWidth;
+  let isStreet = (row, col) =>
+    row % blockSpan < streetWidth || col % blockSpan < streetWidth;
+  let getBlockType = (row, col) => {
+    let blockRow = Math.floor(row / blockSpan);
+    let blockCol = Math.floor(col / blockSpan);
+    if (blockRow % 4 === 1 && blockCol % 4 === 2) {
+      return "lake";
+    }
+    if ((blockRow + blockCol) % 3 === 0) {
+      return "park";
+    }
+    return "building";
+  };
+
+  Object.keys(this.nodes).forEach(id => {
+    let node = this.nodes[id];
+    let element = document.getElementById(id);
+    let [row, col] = id.split("-").map(Number);
+    node.weight = 0;
+    if (isStreet(row, col)) {
+      node.status = "unvisited";
+      if (element) {
+        element.className = "unvisited corridor";
+      }
+    } else {
+      node.status = "wall";
+      let type = getBlockType(row, col);
+      if (element) {
+        element.className = `wall ${type}`;
+      }
+    }
+  });
+
+  let snapToStreet = (nodeId) => {
+    if (!nodeId) return nodeId;
+    let [row, col] = nodeId.split("-").map(Number);
+    if (isStreet(row, col)) return nodeId;
+    let maxRadius = Math.max(this.height, this.width);
+    for (let radius = 1; radius < maxRadius; radius += 1) {
+      for (let dr = -radius; dr <= radius; dr += 1) {
+        for (let dc = -radius; dc <= radius; dc += 1) {
+          let r = row + dr;
+          let c = col + dc;
+          if (r < 0 || c < 0 || r >= this.height || c >= this.width) continue;
+          if (isStreet(r, c)) {
+            return `${r}-${c}`;
+          }
+        }
+      }
+    }
+    return nodeId;
+  };
+
+  this.start = snapToStreet(this.start);
+  this.target = snapToStreet(this.target);
+  this.object = snapToStreet(this.object);
+
+  if (this.start) {
+    let startNode = this.nodes[this.start];
+    if (startNode) {
+      startNode.status = "start";
+      let startElement = document.getElementById(this.start);
+      if (startElement) startElement.className = "start";
+    }
+  }
+  if (this.target) {
+    let targetNode = this.nodes[this.target];
+    if (targetNode) {
+      targetNode.status = "target";
+      let targetElement = document.getElementById(this.target);
+      if (targetElement) targetElement.className = "target";
+    }
+  }
+  if (this.object && this.numberOfObjects) {
+    let objectNode = this.nodes[this.object];
+    if (objectNode) {
+      objectNode.status = "object";
+      let objectElement = document.getElementById(this.object);
+      if (objectElement) objectElement.className = "object";
+    }
+  }
+  this.algoDone = false;
+  this.resetDashboardMetrics("City Blocks layout applied.");
 };
 
 Board.prototype.updateDashboardAlgorithm = function() {
@@ -1310,9 +1470,9 @@ Board.prototype.toggleTutorialButtons = function() {
     } else if (counter === 5) {
       document.getElementById("tutorial").innerHTML = `<h3>Adding walls and weights</h3><h6>Click on the grid to add a wall. Click on the grid while pressing W to add a weight. Generate mazes and patterns from the "Mazes & Patterns" drop-down menu.</h6><p>Walls are impenetrable, meaning that a path cannot cross through them. Weights, however, are not impassable. They are simply more "costly" to move through. In this application, moving through a weight node has a "cost" of 15.</p><img id="secondTutorialImage" src="public/styling/walls.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 6) {
-      document.getElementById("tutorial").innerHTML = `<h3>Adding a bomb</h3><h6>Click the "Add Bomb" button.</h6><p>Adding a bomb will change the course of the chosen algorithm. In other words, the algorithm will first look for the bomb (in an effort to diffuse it) and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a bomb.</p><img id="secondTutorialImage" src="public/styling/bomb.png"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
+      document.getElementById("tutorial").innerHTML = `<h3>Adding a stop</h3><h6>Click the "Add Stop" button.</h6><p>Adding a stop will change the course of the chosen algorithm. In other words, the algorithm will first look for the stop and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a stop.</p><img id="secondTutorialImage" src="public/styling/pin.svg"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 7) {
-      document.getElementById("tutorial").innerHTML = `<h3>Dragging nodes</h3><h6>Click and drag the start, bomb, and target nodes to move them.</h6><p>Note that you can drag nodes even after an algorithm has finished running. This will allow you to instantly see different paths.</p><img src="public/styling/dragging.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
+      document.getElementById("tutorial").innerHTML = `<h3>Dragging nodes</h3><h6>Click and drag the start, stop, and target nodes to move them.</h6><p>Note that you can drag nodes even after an algorithm has finished running. This will allow you to instantly see different paths.</p><img src="public/styling/dragging.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 8) {
       document.getElementById("tutorial").innerHTML = `<h3>Visualizing and more</h3><h6>Use the navbar buttons to visualize algorithms and to do other stuff!</h6><p>You can clear the current path, clear walls and weights, clear the entire board, and adjust the visualization speed, all from the navbar. If you want to access this tutorial again, click on "Pathfinding Visualizer" in the top left corner of your screen.</p><img id="secondTutorialImage" src="public/styling/navbar.png"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 9) {
@@ -1418,7 +1578,7 @@ Board.prototype.toggleButtons = function() {
       this.setActiveAlgorithmMenuItem("startButtonBidirectional");
       if (this.numberOfObjects) {
         let objectNodeId = this.object;
-        document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Bomb</a></li>';
+        document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Stop</a></li>';
         document.getElementById(objectNodeId).className = "unvisited";
         this.object = null;
         this.numberOfObjects = 0;
@@ -1504,7 +1664,7 @@ Board.prototype.toggleButtons = function() {
     }
 
     document.getElementById("startButtonClearBoard").onclick = () => {
-      document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Bomb</a></li>';
+      document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
 
 
 
@@ -1593,7 +1753,7 @@ Board.prototype.toggleButtons = function() {
           if (this.target === objectNodeId || this.start === objectNodeId || this.numberOfObjects === 1) {
             console.log("Failure to place object.");
           } else {
-            document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Remove Bomb</a></li>';
+            document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Remove Stop</a></li>';
             this.clearPath("clickedButton");
             this.object = objectNodeId;
             this.numberOfObjects = 1;
@@ -1602,7 +1762,7 @@ Board.prototype.toggleButtons = function() {
           }
         } else {
           let objectNodeId = this.object;
-          document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Bomb</a></li>';
+          document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
           document.getElementById(objectNodeId).className = "unvisited";
           this.object = null;
           this.numberOfObjects = 0;
