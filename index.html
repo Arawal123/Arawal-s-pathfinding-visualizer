@@ -44,7 +44,8 @@
                <li id='startStairDemonstration'><a href="#">Simple Stair Pattern</a></li>
              </ul>
            </li>
-           <li id='startButtonAddObject'><a href="#">Add Bomb</a></li>
+          <li id='startButtonAddStop'><a href="#">Stop Placement: Off</a></li>
+          <li id='startButtonAddWarning'><a href="#">Warning Placement: Off</a></li>
            <li id='startButtonStart'><button id="actualStartButton" class="btn btn-default navbar-btn" type="button">Visualize!</button></li>
            <li id='startButtonClearBoard'><a href="#">Clear Board</a></li>
            <li id='startButtonClearWalls'><a href="#">Clear Walls &amp; Weights</a></li>
@@ -129,9 +130,9 @@
           <li>
             <div class="target"></div>Target Node</li>
           <li id="bombLegend">
-            <div class="object"></div>Bomb Node</li>
+            <div class="object"></div>Stop Node</li>
           <li id="weightLegend">
-            <div class="borderlessWeight"></div>Weight Node</li>
+            <div class="borderlessWeight"></div>Warning/Avoid Node</li>
           <li>
             <div class="unvisited"></div>Unvisited Node</li>
           <li>
@@ -175,8 +176,8 @@
           <div class="dashboard-section">
             <h4>Scenario Presets</h4>
             <div id="presetButtons" class="preset-buttons">
-              <button class="btn btn-default" data-preset-id="flood-evacuation" type="button">Flood Evacuation</button>
-              <button class="btn btn-default" data-preset-id="emergency-response" type="button">Emergency Response</button>
+              <button class="btn btn-default preset-flood" data-preset-id="flood-evacuation" type="button">Flood Evacuation</button>
+              <button class="btn btn-default preset-emergency" data-preset-id="emergency-response" type="button">Emergency Response</button>
               <button class="btn btn-default" data-preset-id="accessibility-routing" type="button">Accessibility Routing</button>
             </div>
             <div class="dashboard-subtitle">Recommendation: <span id="scenarioRecommendation">Select a preset to view guidance.</span></div>

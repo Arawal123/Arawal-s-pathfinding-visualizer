@@ -10,6 +10,32 @@
   border: 2px solid grey;
 }*/
 
+.preset-buttons .preset-flood {
+  background: #2f74d0;
+  border-color: #275ea7;
+  color: #fff;
+}
+
+.preset-buttons .preset-flood:hover,
+.preset-buttons .preset-flood:focus {
+  background: #245a9c;
+  border-color: #1f4f89;
+  color: #fff;
+}
+
+.preset-buttons .preset-emergency {
+  background: #d9534f;
+  border-color: #c9302c;
+  color: #fff;
+}
+
+.preset-buttons .preset-emergency:hover,
+.preset-buttons .preset-emergency:focus {
+  background: #c12e2a;
+  border-color: #a82a26;
+  color: #fff;
+}
+
 .start{
   /*border: 1px solid rgb(175, 216, 248);*/
   background-image:url(triangletwo-up.svg);
@@ -209,7 +235,7 @@
   border: 1px solid rgb(175, 216, 248);
   background-color: rgba(0, 190, 218, 0.75);
   /*background-color: rgba(178, 67, 255, 0.75);*/
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -229,7 +255,7 @@
 
 .visited.weight{
   border: 1px solid rgb(175, 216, 248);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -303,7 +329,7 @@
   border: 1px solid rgb(175, 216, 248);
   background-color: rgba(178, 67, 255, 0.75);
   /*background-color: rgba(0, 190, 218, 0.75);*/
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -325,7 +351,7 @@
 .visitedobject.weight{
   /*background:red*/
   border: 1px solid rgb(175, 216, 248);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -367,7 +393,7 @@
 }
 
 .borderlessWeight {
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -383,7 +409,7 @@
 
 .unvisited.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
-  background-image: url(pokemonweight.png);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -425,7 +451,7 @@
 
 .object{
   /*border: 1px solid rgb(175, 216, 248);*/
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   /*background-color: rgb(255, 254, 106);*/
   background-position: center;
   background-repeat: no-repeat;
@@ -443,7 +469,7 @@
 .instantobjectTransparent{
   /*border: 1px solid rgb(175, 216, 248);*/
   opacity: 0.5;
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   background-color: rgb(255, 254, 106);
   background-position: center;
   background-repeat: no-repeat;
@@ -453,7 +479,7 @@
 .objectTransparent{
   /*border: 1px solid rgb(175, 216, 248);*/
   opacity: 0.5;
-  background-image: url(diamond.svg);
+  background-image: url(pin.svg);
   background-color: rgb(255, 254, 106);
   background-position: center;
   background-repeat: no-repeat;
@@ -511,7 +537,7 @@
 .instantshortest-path.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
   background-color: rgb(255, 254, 106);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -536,7 +562,7 @@
 .shortest-path.weight{
   /*border: 1px solid rgb(175, 216, 248);*/
   background-color: rgb(255, 254, 106);
-  background-image: url(weight.svg);
+  background-image: url(warning.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;

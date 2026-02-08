@@ -32,7 +32,7 @@ function getNeighbors(id, nodes, boardArray, name) {
   let potentialNeighbor;
   if (boardArray[x - 1] && boardArray[x - 1][y]) {
     potentialNeighbor = `${(x - 1).toString()}-${y.toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") {
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") {
       if (name === "bfs") {
         neighbors.push(potentialNeighbor);
       } else {
@@ -42,7 +42,7 @@ function getNeighbors(id, nodes, boardArray, name) {
   }
   if (boardArray[x][y + 1]) {
     potentialNeighbor = `${x.toString()}-${(y + 1).toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") {
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") {
       if (name === "bfs") {
         neighbors.push(potentialNeighbor);
       } else {
@@ -52,7 +52,7 @@ function getNeighbors(id, nodes, boardArray, name) {
   }
   if (boardArray[x + 1] && boardArray[x + 1][y]) {
     potentialNeighbor = `${(x + 1).toString()}-${y.toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") {
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") {
       if (name === "bfs") {
         neighbors.push(potentialNeighbor);
       } else {
@@ -62,7 +62,7 @@ function getNeighbors(id, nodes, boardArray, name) {
   }
   if (boardArray[x][y - 1]) {
     potentialNeighbor = `${x.toString()}-${(y - 1).toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") {
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") {
       if (name === "bfs") {
         neighbors.push(potentialNeighbor);
       } else {
