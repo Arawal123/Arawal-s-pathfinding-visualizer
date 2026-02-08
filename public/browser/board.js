@@ -1356,7 +1356,12 @@ Board.prototype.toggleTutorialButtons = function() {
     } else if (counter === 5) {
       document.getElementById("tutorial").innerHTML = `<h3>Adding walls and weights</h3><h6>Click on the grid to add a wall. Click on the grid while pressing W to add a weight. Generate mazes and patterns from the "Mazes & Patterns" drop-down menu.</h6><p>Walls are impenetrable, meaning that a path cannot cross through them. Weights, however, are not impassable. They are simply more "costly" to move through. In this application, moving through a weight node has a "cost" of 15.</p><img id="secondTutorialImage" src="public/styling/walls.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 6) {
+
       document.getElementById("tutorial").innerHTML = `<h3>Adding stop markers</h3><h6>Click the "Stop Placement" button.</h6><p>Stop markers behave like blocked areas. Toggle Stop Placement on, then click to place or remove as many stop nodes as you need. Use Warning Placement (or press W) to paint warning/avoid nodes that increase traversal cost.</p><img id="secondTutorialImage" src="public/styling/pin.svg"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
+
+
+      document.getElementById("tutorial").innerHTML = `<h3>Adding a stop</h3><h6>Click the "Add Stop" button.</h6><p>Adding a stop will change the course of the chosen algorithm. In other words, the algorithm will first look for the stop (as an intermediate point) and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a stop.</p><img id="secondTutorialImage" src="public/styling/pin.svg"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
+      document.getElementById("tutorial").innerHTML = `<h3>Adding a stop</h3><h6>Click the "Add Stop" button.</h6><p>Adding a stop will change the course of the chosen algorithm. In other words, the algorithm will first look for the stop and will then look for the target node. Note that the Bidirectional Swarm Algorithm does not support adding a stop.</p><img id="secondTutorialImage" src="public/styling/pin.svg"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 7) {
       document.getElementById("tutorial").innerHTML = `<h3>Dragging nodes</h3><h6>Click and drag the start, stop, and target nodes to move them.</h6><p>Note that you can drag nodes even after an algorithm has finished running. This will allow you to instantly see different paths.</p><img src="public/styling/dragging.gif"><div id="tutorialCounter">${counter}/9</div><button id="nextButton" class="btn btn-default navbar-btn" type="button">Next</button><button id="previousButton" class="btn btn-default navbar-btn" type="button">Previous</button><button id="skipButton" class="btn btn-default navbar-btn" type="button">Skip Tutorial</button>`
     } else if (counter === 8) {
@@ -1462,6 +1467,18 @@ Board.prototype.toggleButtons = function() {
       this.currentAlgorithm = "bidirectional";
       this.currentHeuristic = "manhattanDistance";
       this.setActiveAlgorithmMenuItem("startButtonBidirectional");
+
+
+      if (this.numberOfObjects) {
+        let objectNodeId = this.object;
+        document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add a Stop</a></li>';
+        document.getElementById(objectNodeId).className = "unvisited";
+        this.object = null;
+        this.numberOfObjects = 0;
+        this.nodes[objectNodeId].status = "unvisited";
+        this.isObject = false;
+      }
+
       this.clearPath("clickedButton");
       this.changeStartNodeImages();
     }
@@ -1541,7 +1558,11 @@ Board.prototype.toggleButtons = function() {
     }
 
     document.getElementById("startButtonClearBoard").onclick = () => {
+
       this.disablePlacementModes();
+=======
+      document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
+
 
 
 
@@ -1621,10 +1642,40 @@ Board.prototype.toggleButtons = function() {
       mazeGenerationAnimations(this);
     }
 
+
     document.getElementById("startButtonAddStop").onclick = () => {
       this.stopMode = !this.stopMode;
       if (this.stopMode) {
         this.warningMode = false;
+
+    document.getElementById("startButtonAddObject").onclick = () => {
+      let innerHTML = document.getElementById("startButtonAddObject").innerHTML;
+      if (this.currentAlgorithm !== "bidirectional") {
+        if (innerHTML.includes("Add")) {
+          let r = Math.floor(this.height / 2);
+          let c = Math.floor(2 * this.width / 4);
+          let objectNodeId = `${r}-${c}`;
+          if (this.target === objectNodeId || this.start === objectNodeId || this.numberOfObjects === 1) {
+            console.log("Failure to place object.");
+          } else {
+            document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Remove Stop</a></li>';
+            this.clearPath("clickedButton");
+            this.object = objectNodeId;
+            this.numberOfObjects = 1;
+            this.nodes[objectNodeId].status = "object";
+            document.getElementById(objectNodeId).className = "object";
+          }
+        } else {
+          let objectNodeId = this.object;
+          document.getElementById("startButtonAddObject").innerHTML = '<a href="#">Add Stop</a></li>';
+          document.getElementById(objectNodeId).className = "unvisited";
+          this.object = null;
+          this.numberOfObjects = 0;
+          this.nodes[objectNodeId].status = "unvisited";
+          this.isObject = false;
+          this.clearPath("clickedButton");
+        }
+
       }
       this.updatePlacementButtons();
     }
