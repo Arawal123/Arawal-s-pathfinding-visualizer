@@ -15,9 +15,9 @@ function bidirectional(nodes, start, target, nodesToAnimate, boardArray, name, h
   while (unvisitedNodesOne.length && unvisitedNodesTwo.length) {
     let currentNode = closestNode(nodes, unvisitedNodesOne);
     let secondCurrentNode = closestNodeTwo(nodes, unvisitedNodesTwo);
-    while ((currentNode.status === "wall" || secondCurrentNode.status === "wall") && unvisitedNodesOne.length && unvisitedNodesTwo.length) {
-      if (currentNode.status === "wall") currentNode = closestNode(nodes, unvisitedNodesOne);
-      if (secondCurrentNode.status === "wall") secondCurrentNode = closestNodeTwo(nodes, unvisitedNodesTwo);
+    while ((currentNode.status === "wall" || currentNode.status === "stop" || secondCurrentNode.status === "wall" || secondCurrentNode.status === "stop") && unvisitedNodesOne.length && unvisitedNodesTwo.length) {
+      if (currentNode.status === "wall" || currentNode.status === "stop") currentNode = closestNode(nodes, unvisitedNodesOne);
+      if (secondCurrentNode.status === "wall" || secondCurrentNode.status === "stop") secondCurrentNode = closestNodeTwo(nodes, unvisitedNodesTwo);
     }
     if (currentNode.distance === Infinity || secondCurrentNode.otherdistance === Infinity) {
       return false;
@@ -113,19 +113,19 @@ function getNeighbors(id, nodes, boardArray) {
   let potentialNeighbor;
   if (boardArray[x - 1] && boardArray[x - 1][y]) {
     potentialNeighbor = `${(x - 1).toString()}-${y.toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") neighbors.push(potentialNeighbor);
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") neighbors.push(potentialNeighbor);
   }
   if (boardArray[x + 1] && boardArray[x + 1][y]) {
     potentialNeighbor = `${(x + 1).toString()}-${y.toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") neighbors.push(potentialNeighbor);
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") neighbors.push(potentialNeighbor);
   }
   if (boardArray[x][y - 1]) {
     potentialNeighbor = `${x.toString()}-${(y - 1).toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") neighbors.push(potentialNeighbor);
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") neighbors.push(potentialNeighbor);
   }
   if (boardArray[x][y + 1]) {
     potentialNeighbor = `${x.toString()}-${(y + 1).toString()}`
-    if (nodes[potentialNeighbor].status !== "wall") neighbors.push(potentialNeighbor);
+    if (nodes[potentialNeighbor].status !== "wall" && nodes[potentialNeighbor].status !== "stop") neighbors.push(potentialNeighbor);
   }
   return neighbors;
 }
